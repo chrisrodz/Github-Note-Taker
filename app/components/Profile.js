@@ -18,22 +18,29 @@ var Profile = React.createClass({
   },
   componentDidMount() {
     this.ref = new Firebase('https://github-note-taker-ef11e.firebaseio.com/');
-    var childRef = this.ref.child(this.props.params.username);
+    this.init(this.props.params.username);
+  },
+  componentWillUnMount() {
+    this.unbind('notes');
+  },
+  componentWillReceiveProps(nextProps) {
+    this.unbind('notes');
+    this.init(nextProps.params.username);
+  },
+  handleAddNote: function(newNote) {
+    this.ref.child(this.props.params.username).child(this.state.notes.length).set(newNote)
+  },
+  init: function(username) {
+    var childRef = this.ref.child(username);
     this.bindAsArray(childRef, 'notes');
 
-    helpers.getGithubInfo(this.props.params.username)
+    helpers.getGithubInfo(username)
       .then(function(data) {
         this.setState({
           bio: data.bio,
           repos: data.repos
         })
       }.bind(this))
-  },
-  componentWillUnMount() {
-    this.unbind('notes');
-  },
-  handleAddNote: function(newNote) {
-    this.ref.child(this.props.params.username).child(this.state.notes.length).set(newNote)
   },
   render() {
     return (
